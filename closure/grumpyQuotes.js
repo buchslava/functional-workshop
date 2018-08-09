@@ -1,5 +1,3 @@
-'use strict';
-
 const quote = (name, year, text) =>  `"${text}"\n\t- ${name} (${year})\n\n`
 
 const grumpyQuotes = [
@@ -20,5 +18,5 @@ if (require.main === module) {
   const { map } = require('../higher-order/filterMapReduce.js');
 
   // Warning: non-functional console.logging ahead!
-  map(grumpyQuotes, console.log);
+  map(console.log, grumpyQuotes);
 }

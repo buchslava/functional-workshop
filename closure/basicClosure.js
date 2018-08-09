@@ -8,14 +8,15 @@ const signMessage = (message, salutation, name) => `${message}\n\n${salutation},
 // Closure territory
 const signAs = (name) => {
   // TODO
+  return (message, salutation) => signMessage(message, salutation, name);
 };
 
 const signWith = (salutation) => {
-  // TODO
+  return (message, name) => signMessage(message, salutation, name);
 };
 
 const makeSignature = (salutation, name) => {
-  // TODO
+  return (message, name) => signMessage(message, salutation, name);
 };
 
 

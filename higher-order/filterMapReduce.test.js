@@ -27,8 +27,25 @@ test('[filterMapReduce] filter: greather than four', (assert) => {
 });
 
 test('[filterMapReduce] filter: primes', (assert) => {
-  const isPrime = (n) => {
-    // TODO
+  const isPrime = (number) => {  
+    if (number < 2) {
+      return false;
+    }
+  
+    if (number === 2) {
+      return true;
+    } else if (number % 2 === 0) {
+      return false;
+    }
+  
+    var squareRoot = Math.sqrt(number);
+    for(var i = 3; i <= squareRoot; i += 2) {
+      if (number % i === 0) {
+        return false;
+      }
+    }
+  
+    return true;
   }
 
   const primes = filter(isPrime, wholes);
@@ -51,7 +68,14 @@ test('[filterMapReduce] map: halved', (assert) => {
 
 test('[filterMapReduce] map: fizz buzz', (assert) => {
   const fizzBuzz = map((n) => {
-    // TODO
+    if (n % 15 == 0)
+        return "fizzbuzz";
+    else if (n % 3 == 0)
+        return "fizz";
+    else if (n % 5 == 0)
+        return "buzz";
+    else
+        return n;
   }, wholes);
   assert.deepEqual(fizzBuzz, ['fizzbuzz', 1, 2, 'fizz', 4, 'buzz', 'fizz', 7, 8, 'fizz', 'buzz']);
   assert.end();

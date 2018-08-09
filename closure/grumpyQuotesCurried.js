@@ -1,7 +1,7 @@
 'use strict';
 
 
-const curriedQuote =  //TODO
+const curriedQuote = (name) => (year) => (text) => `"${text}"\n\t- ${name} (${year})\n\n`;
 
 
 const quoteCrockford = curriedQuote('Doug Crockford');
@@ -25,7 +25,9 @@ const grumpyQuotes = [
 
 if (require.main === module) {
   const { map } = require('../higher-order/filterMapReduce.js');
-
   // Warning: non-functional console.logging ahead!
-  map(grumpyQuotes, console.log);
+  // console.log(1);
+  map(console.log, grumpyQuotes);
+  //console.log(grumpyQuotes, grumpyQuotes.length);
+  // grumpyQuotes.map(v => console.log(v));
 }
