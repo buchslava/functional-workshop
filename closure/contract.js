@@ -1,5 +1,10 @@
 const _ = require('lodash');
 
+/*
+логика
+*/
+
+/*
 function getProductsListQuery(productsGroup, filter = '', pageNum = 0, limit = 0) {
   let sql = `SELECT name, price, unit FROM products WHERE group='${productsGroup}' ${filter} #pagination#`;
 
@@ -20,17 +25,20 @@ console.log(getProductsListQuery('milk', 'AND price>10'));
 console.log(getProductsListQuery('milk'));
 
 console.log('--------');
-
+*/
 
 function getProductsListQueryNew() {
   const states = [`SELECT name, price, unit FROM products WHERE group='#group#' #filter# #pagination#`];
   const _get = () => _.last(states);
   const _set = (key, value) => states.push(_.last(states).replace(`#${key}#`, value));
-  const allList = () => {
-    _set('pagination', '');
-    _set('filter', '');
-    return _get();
-  };
+  const allList = () => { _set('pagination', ''); _set('filter', ''); return _get(); };
+  const onPage = (pageNum) => ({
+      withLimit: (limit) => {
+        _set('filter', '');
+        _set('pagination', `OFFSET ${pageNum} LIMIT ${limit}`);
+        return _get();
+      }
+  });
 
   return {
     forGroup: (group) => {
@@ -38,30 +46,20 @@ function getProductsListQueryNew() {
       return ({
         filteredBy: (filter) => {
           _set('filter', filter);
-          return ({
-            withPagination: () => ({
-              onPage: (pageNum) => {
-                return {
-                  withLimit: (limit) => {
-                    _set('pagination', `OFFSET ${pageNum} LIMIT ${limit}`);
-                    return _get();
-                  }
-                };
-              }
-            }),
-            allList
-          });
+          return ({ onPage, allList });
         },
+        onPage,
         allList
       });
     }
   }
 }
 
-console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').withPagination().onPage(5).withLimit(25));
+console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').onPage(5).withLimit(25));
+console.log(getProductsListQueryNew().forGroup('milk').onPage(5).withLimit(25));
 console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').allList());
 console.log(getProductsListQueryNew().forGroup('milk').allList());
-
+/*
 console.log('--------');
 
 function getProductsListQueryTrace(traceIt = false) {
@@ -102,3 +100,4 @@ function getProductsListQueryTrace(traceIt = false) {
 
 console.log(getProductsListQueryTrace().forGroup('milk').filteredBy('AND price>10').withPagination().onPage(5).withLimit(25));
 console.log(getProductsListQueryTrace(true).forGroup('milk').filteredBy('AND price>10').withPagination().onPage(5).withLimit(25));
+*/
