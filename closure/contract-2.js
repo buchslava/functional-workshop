@@ -1,16 +1,22 @@
 const _ = require('lodash');
 
-function getProductsListQueryNew() {
-  const states = [`SELECT name, price, unit FROM products WHERE group='#group#' #filter# #pagination#`];
-  const _get = () => _.last(states);
-  const _set = (key, value) => states.push(_get().replace(`#${key}#`, value));
-  const _shouldNotBeEmpty = (key, value) => {
-    if (!value && value !== 0) {
-      throw new Error(`"${key}" should NOT be empty`);
-    }
-    return [key, value];
-  };
-  const allList = () => { _set('pagination', ''); _set('filter', ''); return _get(); };
+const _shouldNotBeEmpty = (key, value) => {
+  if (!value && value !== 0) {
+    throw new Error(`"${key}" should NOT be empty`);
+  }
+  return [key, value];
+};
+const _shouldBeNumber = (key, value) => {
+  if (!_.isNumber(value)) {
+    throw new Error(`"${key}" should be a number`);
+  }
+  return [key, value];
+}
+
+function getProductsQueryNew() {
+  let state = `SELECT name, price, unit FROM products WHERE group='#group#' #filter# #pagination#`;
+  const _set = (key, value) => state = state.replace(`#${key}#`, value);
+  const immediate = () => { _set('pagination', ''); _set('filter', ''); return state; };
 
   return {
     forGroup: (group) => {
@@ -21,36 +27,35 @@ function getProductsListQueryNew() {
           return ({
             onPage: (pageNum) => ({
               withLimit: (limit) => {
-                _shouldNotBeEmpty('pageNum', pageNum);
-                _shouldNotBeEmpty('limit', limit);
-                _set(..._shouldNotBeEmpty('pagination', `OFFSET ${pageNum} LIMIT ${limit}`));
-                return _get();
+                _shouldBeNumber('pageNum', pageNum); _shouldBeNumber('limit', limit);
+                _set('pagination', `OFFSET ${pageNum} LIMIT ${limit}`);
+                return state;
               }
-            }), allList
+            }), immediate
           });
-        }, allList
+        }, immediate
       });
     }
   }
 }
 
-console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').onPage(5).withLimit(25));
-console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').allList());
-console.log(getProductsListQueryNew().forGroup('milk').allList());
+console.log(getProductsQueryNew().forGroup('milk').filteredBy('AND price>10').onPage(5).withLimit(25));
+console.log(getProductsQueryNew().forGroup('milk').filteredBy('AND price>10').immediate());
+console.log(getProductsQueryNew().forGroup('milk').immediate());
 try {
-  console.log(getProductsListQueryNew().forGroup('').allList());
+  console.log(getProductsQueryNew().forGroup('').immediate());
 } catch (e) {
   console.log(e.message);
 }
 
 try {
-  console.log(getProductsListQueryNew().forGroup('milk').filteredBy('').allList());
+  console.log(getProductsQueryNew().forGroup('milk').filteredBy('').immediate());
 } catch (e) {
   console.log(e.message);
 }
 
 try {
-  console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').onPage().withLimit(25));
+  console.log(getProductsQueryNew().forGroup('milk').filteredBy('AND price>10').onPage().withLimit(25));
 } catch (e) {
   console.log(e.message);
 }

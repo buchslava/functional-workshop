@@ -1,5 +1,9 @@
 const _ = require('lodash');
 
+const getProductsListQueryS = (productsGroup, filter, pageNum, limit) => 
+  `SELECT name, price, unit FROM products WHERE group='${productsGroup}' ${filter} OFFSET ${pageNum} LIMIT ${limit}`;
+
+console.log(getProductsListQueryS('foo'));
 /*
 logic
 1. select products by product group
@@ -7,20 +11,19 @@ logic
 3. optional pagination (including page and limit at the same time)
 */
 
-function getProductsListQuery(productsGroup, filter = '', pageNum = 0, limit = 0) {
+function getProductsListQuery(productsGroup, filter = '', pageNum = '', limit = '') {
   let sql = `SELECT name, price, unit FROM products WHERE group='${productsGroup}' #filter# #pagination#`;
 
   if (!productsGroup) {
     throw new Error(`productsGroup should be empty`);
   }
 
-  // ?
   sql = sql.replace('#filter#', filter || '');
 
   if (!pageNum && !limit) {
     // ?
     sql = sql.replace('#pagination#', '');
-  } else if (pageNum && limit) {
+  } else if (_.isNumber(pageNum) && _.isNumber(limit)) {
     sql = sql.replace('#pagination#', `OFFSET ${pageNum} LIMIT ${limit}`);
   } else {
     throw new Error('Bad pagination parameters!');
@@ -36,11 +39,14 @@ console.log(getProductsListQuery('milk'));
 
 console.log('--------');
 
-function getProductsListQueryNew() {
-  const states = [`SELECT name, price, unit FROM products WHERE group='#group#' #filter# #pagination#`];
-  const _get = () => _.last(states);
-  const _set = (key, value) => states.push(_get().replace(`#${key}#`, value));
-  const allList = () => { _set('pagination', ''); _set('filter', ''); return _get(); };
+// separte paging
+
+console.log('--------');
+
+function getProductsQueryNew() {
+  let state = `SELECT name, price, unit FROM products WHERE group='#group#' #filter# #pagination#`;
+  const _set = (key, value) => state = state.replace(`#${key}#`, value);
+  const immediate = () => { _set('pagination', ''); _set('filter', ''); return state; };
 
   return {
     forGroup: (group) => {
@@ -52,21 +58,21 @@ function getProductsListQueryNew() {
             onPage: (pageNum) => ({
               withLimit: (limit) => {
                 _set('pagination', `OFFSET ${pageNum} LIMIT ${limit}`);
-                return _get();
+                return state;
               }
             }),
-            allList
+            immediate
           });
         },
-        allList
+        immediate
       });
     }
   }
 }
 
-console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').onPage(5).withLimit(25));
-console.log(getProductsListQueryNew().forGroup('milk').filteredBy('AND price>10').allList());
-console.log(getProductsListQueryNew().forGroup('milk').allList());
+console.log(getProductsQueryNew().forGroup('milk').filteredBy('AND price>10').onPage(5).withLimit(25));
+console.log(getProductsQueryNew().forGroup('milk').filteredBy('AND price>10').immediate());
+console.log(getProductsQueryNew().forGroup('milk').immediate());
 
 /*
 console.log('--------');
