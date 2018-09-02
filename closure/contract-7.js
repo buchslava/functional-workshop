@@ -66,7 +66,7 @@ async function myStory() {
     }
 
     StepByStep(handler).do(hack('microsoft')).do(waitFor('new apple products')).finish();
-    StepByStep(handler, ['make', 'and']).make(sound('bark')).make(sound('meo')).make(sound('yay')).finish();
+    StepByStep(handler, ['make', 'and']).make(sound('bark')).and(sound('meo')).and(sound('yay')).finish();
   });
 }
 
